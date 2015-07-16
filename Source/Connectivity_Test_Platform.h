@@ -176,9 +176,15 @@ extern operationModes_t testOpMode;
 * Public functions declarations
 *************************************************************************************
 ************************************************************************************/
-
+#ifdef __cplusplus
+extern "C" {
+#endif    
 extern void PrintMenu(char * const pu8Menu[], uint8_t port);
 /*common functions declarations which have platform dependent behavior*/
 extern void ShortCutsParser( uint8_t u8UartData );
 extern void InitApp_custom();
 extern void InitProject_custom();
+
+#ifdef __cplusplus
+} //extern "C" 
+#endif

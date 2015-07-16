@@ -54,6 +54,7 @@
 #define gContTxModSelectOnes_c   ( 1 )
 #define gContTxModSelectZeros_c  ( 0 )
 #define SelfNotificationEvent()  mainTask->signal_set(gCTSelf_EVENT_c);
+#define ResetMCU()  NVIC_SystemReset()
 
 #define gUART_RX_EVENT_c         (1<<0)
 #define gMcps_Cnf_EVENT_c        (1<<1)
@@ -208,7 +209,6 @@ extern void PrintTestParameters(bool_t bEraseLine);
 void InitProject(void);
 void InitSmac(void);
 void main_task(void const *argument);
-extern void ResetMCU(void);
 void UartRxCallBack(void * param);
 void PrintMenu(char * const pu8Menu[], uint8_t port);
 
@@ -2315,7 +2315,7 @@ smacTestMode_t  mode  /*IN: The test mode to start.*/
   }                                                                             
   else if(gTestModeContinuousTxModulated_c == mode)
   {
-    if(contTxModBitValue==gContTxModSelectOnes_c)
+    /*if(contTxModBitValue==gContTxModSelectOnes_c)
     {
       aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxModOne_c;
     }
@@ -2323,7 +2323,7 @@ smacTestMode_t  mode  /*IN: The test mode to start.*/
     {
       aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxModZero_c;
     }
-    else if(contTxModBitValue == gContTxModSelectPN9_c)
+    else */if(contTxModBitValue == gContTxModSelectPN9_c)
     {
 #ifdef gPHY_802_15_4g_d
       aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxContPN9_c;
@@ -2387,7 +2387,6 @@ void PacketHandler_Prbs9(void)
 *****************************************************************************/
 void UartRxCallBack(void * param) 
 {
-  uint16_t readBytes;
   gu8UartData = uart.getc();
   gTaskEventFlags |= gUART_RX_EVENT_c;
 }
