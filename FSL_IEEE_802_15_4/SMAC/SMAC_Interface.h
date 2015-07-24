@@ -30,7 +30,7 @@
 * Includes
 *************************************************************************************
 ************************************************************************************/
-#include "EmbeddedTypes.h"                   
+#include "EmbeddedTypes.h"   
 #include "PhyTypes.h"
 /************************************************************************************
 *************************************************************************************
@@ -549,7 +549,7 @@ extern smacErrors_t MLMESetCCADuration(uint64_t usCCADuration );
 /************************************************************************************
 * MLMEPacketConfig
 *
-* This function sets the following parameters for OTA packets in radio�s registers:
+* This function sets the following parameters for OTA packets in radioï¿½s registers:
 * Preamble size, synchronization word size, and synchronization word value.
 * 
 *  Interface assumptions:
@@ -597,7 +597,14 @@ extern smacErrors_t MLMERadioInit(void);
 *  Return Value:
 *  gErrorNoError_c: If the action is performed.
 *************************************************************************************/
-extern smacErrors_t MLMEPhySoftReset(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+smacErrors_t MLMEPhySoftReset(void);
+
+#ifdef __cplusplus
+} //extern "C" 
+#endif
 
 /************************************************************************************
 * MLMEPAOutputAdjust

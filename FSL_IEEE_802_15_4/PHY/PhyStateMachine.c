@@ -52,10 +52,10 @@
 
 
 #include "MemManager.h"
+#include "FunctionLib.h"
 #if 0
 #include "Messaging.h"
 #include "Panic.h"
-#include "FunctionLib.h"
 #endif
 
 #include "MCR20Drv.h"

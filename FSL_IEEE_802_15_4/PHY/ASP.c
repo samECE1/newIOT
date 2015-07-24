@@ -60,6 +60,11 @@
 #include "FsciCommunication.h"
 #endif
 
+#define gSmacSupported (1)
+
+#ifdef gSmacSupported
+#include "SMAC_Interface.h"
+#endif
 #if gAspCapability_d
 
 /************************************************************************************
@@ -584,8 +589,11 @@ AspStatus_t ASP_TelecTest(uint8_t mode)
     switch( mode )
     {
     case gTestForceIdle_c:  //ForceIdle();
+#ifdef gSmacSupported
+        MLMEPhySoftReset();
+#else
         PhyPlmeForceTrxOffRequest();
-
+#endif
         AspSetDtsMode(gDtsNormal_c);
         AspDisableBER();
         break;

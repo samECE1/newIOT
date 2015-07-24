@@ -53,7 +53,12 @@
 #define gContTxModSelectPN9_c    ( 2 )
 #define gContTxModSelectOnes_c   ( 1 )
 #define gContTxModSelectZeros_c  ( 0 )
-#define SelfNotificationEvent()  mainTask->signal_set(gCTSelf_EVENT_c);
+#define SelfNotificationEvent()  \
+                                 do                                        \
+                                 {                                         \
+                                    gTaskEventFlags |= gCTSelf_EVENT_c;    \
+                                    mainTask->signal_set(gEventsAny_c);    \
+                                 }while(0);
 #define ResetMCU()  NVIC_SystemReset()
 
 #define gUART_RX_EVENT_c         (1<<0)
@@ -66,9 +71,7 @@
 #define gCTSelf_EVENT_c          (1<<7)
 #define gTimePassed_EVENT_c      (1<<8)
 
-#define gEventsAll_c             (gUART_RX_EVENT_c | gMcps_Ind_EVENT_c | gMcps_Cnf_EVENT_c | \
-                                  gMlme_TimeoutInd_EVENT_c | gMlme_EdCnf_EVENT_c | gMlme_CcaCnf_EVENT_c | \
-                                  gRangeTest_EVENT_c | gCTSelf_EVENT_c | gTimePassed_EVENT_c)
+#define gEventsAny_c             (1<<9)
 
 #define Delay_ms(a)        
 #define FlaggedDelay_ms(a)       TMR_StartSingleShotTimer(AppDelayTmr, a, DelayTimeElapsed, NULL)
@@ -209,7 +212,7 @@ extern void PrintTestParameters(bool_t bEraseLine);
 void InitProject(void);
 void InitSmac(void);
 void main_task(void const *argument);
-void UartRxCallBack(void * param);
+void UartRxCallBack(void);
 void PrintMenu(char * const pu8Menu[], uint8_t port);
 
 /************************************************************************************
@@ -259,9 +262,11 @@ smacErrors_t smacToAppMlmeSap(smacToAppMlmeMessage_t* pMsg, instanceId_t instanc
   case gMlmeEdCnf_c:
     au8ScanResults[pMsg->msgData.edCnf.scannedChannel] = pMsg->msgData.edCnf.energyLeveldB;
     gTaskEventFlags |= gMlme_EdCnf_EVENT_c;
+    mainTask->signal_set(gEventsAny_c);
     break;
   case gMlmeCcaCnf_c:
     gTaskEventFlags |= gMlme_CcaCnf_EVENT_c;
+    mainTask->signal_set(gEventsAny_c);
     if(pMsg->msgData.ccaCnf.status == gErrorNoError_c)
       gIsChannelIdle = TRUE;
     else
@@ -269,6 +274,7 @@ smacErrors_t smacToAppMlmeSap(smacToAppMlmeMessage_t* pMsg, instanceId_t instanc
     break;
   case gMlmeTimeoutInd_c:
     gTaskEventFlags |= gMlme_TimeoutInd_EVENT_c;
+    mainTask->signal_set(gEventsAny_c);
     break;
   default:
     break;
@@ -286,13 +292,14 @@ smacErrors_t smacToAppMcpsSap(smacToAppDataMessage_t* pMsg, instanceId_t instanc
     {
       u8LastRxRssiValue = pMsg->msgData.dataInd.u8LastRxRssi;
       gTaskEventFlags |= gMcps_Ind_EVENT_c;
+      mainTask->signal_set(gEventsAny_c);
     }
     break;
   case gMcpsDataCnf_c:
     if(pMsg->msgData.dataCnf.status == gErrorNoError_c)
     {
       gTaskEventFlags |= gMcps_Cnf_EVENT_c;
-      
+      mainTask->signal_set(gEventsAny_c);      
     }
     break;
   default:
@@ -379,6 +386,8 @@ void main_task(void const *argument)
 
     InitApp();
     
+    uart.attach(&UartRxCallBack);
+    
     /*Prints the Welcome screens in the terminal*/  
     PrintMenu(cu8FreescaleLogo, mAppSer);
   
@@ -388,21 +397,17 @@ void main_task(void const *argument)
   if(!bUserInteraction)
   {
     while(1)
-    {
-      //(void)OSA_EventWait(&gTaskEvent, gEventsAll_c, FALSE, OSA_WAIT_FOREVER ,&gTaskEventFlags);
-      Thread::signal_wait(gEventsAll_c);
-      if(gTaskEventFlags & gUART_RX_EVENT_c)
+    { 
+      Thread::signal_wait(gEventsAny_c);
+      if(gu8UartData == '\r')
       {
-        if(gu8UartData == '\r')
-        {
-          SelfNotificationEvent();
-          bUserInteraction = TRUE;
-          break;
-        }
-        else
-        {
-          PrintMenu(cu8FreescaleLogo, mAppSer);
-        }
+        SelfNotificationEvent();
+        bUserInteraction = TRUE;
+        break;
+      }
+      else
+      {
+        PrintMenu(cu8FreescaleLogo, mAppSer);
       }
     }
   }
@@ -410,8 +415,7 @@ void main_task(void const *argument)
   {
     while(1)
     {
-      //(void)OSA_EventWait(&gTaskEvent, gEventsAll_c, FALSE, OSA_WAIT_FOREVER ,&gTaskEventFlags);
-      Thread::signal_wait(gEventsAll_c);
+      Thread::signal_wait(gEventsAny_c);
       HandleEvents(gTaskEventFlags);
       SerialUIStateMachine();  
     }
@@ -2385,16 +2389,18 @@ void PacketHandler_Prbs9(void)
 * Return Value:
 * None
 *****************************************************************************/
-void UartRxCallBack(void * param) 
+void UartRxCallBack(void) 
 {
   gu8UartData = uart.getc();
   gTaskEventFlags |= gUART_RX_EVENT_c;
+  mainTask->signal_set(gEventsAny_c);  
 }
 
 /*@CMA, Conn Test. Range Test CallBack*/
 void RangeTest_Timer_CallBack ()
 {
   gTaskEventFlags |= gRangeTest_EVENT_c;
+  mainTask->signal_set(gEventsAny_c);  
 }
 
 
@@ -2461,6 +2467,7 @@ static void DelayTimeElapsed()
 {
   timePassed = TRUE;
   gTaskEventFlags |= gTimePassed_EVENT_c;
+  mainTask->signal_set(gEventsAny_c);  
 }
 
 /***********************************************************************************
