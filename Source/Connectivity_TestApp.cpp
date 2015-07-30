@@ -74,7 +74,7 @@
 #define gEventsAny_c             (1<<9)
 
 #define Delay_ms(a)        
-#define FlaggedDelay_ms(a)       TMR_StartSingleShotTimer(AppDelayTmr, a, DelayTimeElapsed, NULL)
+#define FlaggedDelay_ms(a)       ConnTestTimeout.attach_us(DelayTimeElapsed, (a) * 1000)
 
 #ifdef gPHY_802_15_4g_d
 #define GetTimestampUS() PhyTime_GetTimestampUs()
@@ -156,7 +156,8 @@ static txPacket_t * gAppTxPacket;
 static rxPacket_t * gAppRxPacket;
 
 static uint8_t timePassed;
-Timeout RangeTestTmr;                                                     
+Timeout RangeTestTmr;
+Timeout ConnTestTimeout;
 Timer AppDelayTmr;
 /************************************************************************************
 *************************************************************************************
@@ -742,7 +743,7 @@ bool_t SerialContinuousTxRxTest(void)
         contTestRunning = gTestModeForceIdle_c;
         uart.printf("\f\r\nPress [p] to stop the Continuous ED test\r\n");               
         cTxRxState = gCTxRxStateRunnigEdTest_c;
-        Thread::wait(200);
+        FlaggedDelay_ms(200);
       }
       else if('7' == gu8UartData)
       {
@@ -760,7 +761,7 @@ bool_t SerialContinuousTxRxTest(void)
         uart.printf("\f\r\nPress [p] to stop the Continuous CCA test\r\n");
         contTestRunning = gTestModeForceIdle_c;                
         cTxRxState = gCTxRxStateRunnigCcaTest_c;
-        Thread::wait(100);
+        FlaggedDelay_ms(100);
         MLMECcaRequest();
       }
 #if CT_Feature_BER_Test
@@ -848,7 +849,7 @@ bool_t SerialContinuousTxRxTest(void)
     if(timePassed)
     {
       timePassed = FALSE;
-      Thread::wait(100);
+      FlaggedDelay_ms(100);
       MLMEScanRequest(testChannel);
     }
     if((evDataFromUART) && ('p' == gu8UartData))
@@ -875,7 +876,7 @@ bool_t SerialContinuousTxRxTest(void)
       gCCaGotResult = FALSE;
       timePassed = FALSE;
       MLMECcaRequest();
-      Thread::wait(100);
+      FlaggedDelay_ms(100);
     }
     if((evDataFromUART) && ('p' == gu8UartData))
     {
@@ -1037,7 +1038,7 @@ bool_t PacketErrorRateTx(void)
     u16SentPackets++;
     uart.printf("\f\r\n Running PER Tx, Sending %d Packets",(uint32_t)u16TotalPackets);
     perTxState = gPerTxStateRunningTest_c;
-    Thread::wait(miliSecDelay);
+    FlaggedDelay_ms(miliSecDelay);
     break;
   case gPerTxStateRunningTest_c:
     if(bTxDone && timePassed)
@@ -1063,7 +1064,7 @@ bool_t PacketErrorRateTx(void)
       (void)MCPSDataRequest(gAppTxPacket);
       u16SentPackets++;
       timePassed = FALSE;
-      Thread::wait(miliSecDelay);
+      FlaggedDelay_ms(miliSecDelay);
     }
     if(evDataFromUART && gu8UartData == ' ')
     {
@@ -1090,7 +1091,7 @@ bool_t PacketErrorRateTx(void)
         gAppTxPacket->u8DataLength = 8;
         (void)MCPSDataRequest(gAppTxPacket);
         u16SentPackets++;
-        Thread::wait(miliSecDelay);
+        FlaggedDelay_ms(miliSecDelay);
       } 
     }
     if(evDataFromUART && gu8UartData == ' ')
@@ -1318,7 +1319,7 @@ bool_t RangeTx(void)
         shortCutsEnabled = FALSE; 
         uart.printf( "\f\r\nRange Test Tx Running\r\n");
         rangeTxState = gRangeTxStateStartTest_c;
-        Thread::wait(200);
+        FlaggedDelay_ms(200);
       }
       else if('p' == gu8UartData)
       { 
@@ -1393,7 +1394,7 @@ bool_t RangeTx(void)
       else
       {
         rangeTxState = gRangeTxStateStartTest_c;
-        Thread::wait(200);
+        FlaggedDelay_ms(200);
       }
       evDataFromUART = FALSE;
     } 
@@ -1493,7 +1494,7 @@ bool_t RangeRx(void)
         if(stringComp((uint8_t*)"SMAC Range Demo",&gAppRxPacket->smacPdu.smacPdu[1],15))
         {
           bRxDone = FALSE;
-          Thread::wait(4);
+          FlaggedDelay_ms(4);
         }
         else
         {
@@ -2121,7 +2122,7 @@ void TransmissionControlHandler(void)
           SelfNotificationEvent();
           break;
         }
-        Thread::wait(miliSecDelay - totalTimeMs);
+        FlaggedDelay_ms(miliSecDelay - totalTimeMs);
       }
       else
       {        
@@ -2423,7 +2424,7 @@ void IncrementChannelOnEdEvent()
   else 
   {
     bScanDone = TRUE;                                               //PRINT ALL CHANNEL RESULTS
-    Thread::wait(300);                                           //Add delay between channel scanning series.
+    FlaggedDelay_ms(300);                                           //Add delay between channel scanning series.
   } 
 }
 
