@@ -387,7 +387,7 @@ void main_task(void const *argument)
     Phy_Init();
 
     InitApp();
-    
+      
     /*Prints the Welcome screens in the terminal*/  
     PrintMenu(cu8FreescaleLogo, mAppSer);
   
@@ -417,6 +417,7 @@ void main_task(void const *argument)
     {
       Thread::signal_wait(gEventsAny_c);
       HandleEvents(gTaskEventFlags);
+      gTaskEventFlags = 0;
       SerialUIStateMachine();  
     }
   } 
@@ -520,7 +521,7 @@ void SerialUIStateMachine(void)
         edCalState= gEdCalStateInit_c;
       }
 #endif
-      else if('!' == gu8UartData)
+      else if('p' == gu8UartData)
       {
         ResetMCU();
       }
@@ -868,7 +869,6 @@ bool_t SerialContinuousTxRxTest(void)
       uart.printf( "-");
     uart.printf("%d dBm\r\n ",(uint32_t)u8TempEnergyValue); 
     cTxRxState = gCTxRxStateRunnigEdTest_c;
-    //SelfNotificationEvent();
     break; 
   case gCTxRxStateRunnigCcaTest_c:
     if(timePassed && gCCaGotResult)
@@ -2550,7 +2550,7 @@ int main()
   uartTask = new Thread(uart_task);
   while(1)
   {
-      
+    
   }
   return 0;
 }
