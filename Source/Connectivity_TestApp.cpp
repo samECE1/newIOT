@@ -143,6 +143,7 @@ extern uint8_t u8Prbs9Buffer[gPrbs9BufferLength_c];
 
 Serial uart(USBTX,USBRX);
 Thread *mainTask;
+Thread *uartTask;
 
 /************************************************************************************
 *************************************************************************************
@@ -386,8 +387,6 @@ void main_task(void const *argument)
     Phy_Init();
 
     InitApp();
-    
-    uart.attach(&UartRxCallBack);
     
     /*Prints the Welcome screens in the terminal*/  
     PrintMenu(cu8FreescaleLogo, mAppSer);
@@ -828,7 +827,7 @@ bool_t SerialContinuousTxRxTest(void)
       {
         uart.printf("New Packet: ");
         for(u8Index = 0; u8Index < (gAppRxPacket->u8DataLength); u8Index++){
-          uart.printf( (const char *)(&(gAppRxPacket->smacPdu.smacPdu[u8Index])));
+          uart.printf( "0x%02X",(gAppRxPacket->smacPdu.smacPdu[u8Index]));
         }
         uart.printf(" \r\n");
       }
@@ -867,8 +866,9 @@ bool_t SerialContinuousTxRxTest(void)
     u8TempEnergyValue = au8ScanResults[testChannel];
     if(u8TempEnergyValue != 0)
       uart.printf( "-");
-    uart.printf("%d dBm\r\n ",(uint32_t)u8TempEnergyValue);      
+    uart.printf("%d dBm\r\n ",(uint32_t)u8TempEnergyValue); 
     cTxRxState = gCTxRxStateRunnigEdTest_c;
+    //SelfNotificationEvent();
     break; 
   case gCTxRxStateRunnigCcaTest_c:
     if(timePassed && gCCaGotResult)
@@ -2320,15 +2320,15 @@ smacTestMode_t  mode  /*IN: The test mode to start.*/
   }                                                                             
   else if(gTestModeContinuousTxModulated_c == mode)
   {
-    /*if(contTxModBitValue==gContTxModSelectOnes_c)
+    if(contTxModBitValue==gContTxModSelectOnes_c)
     {
-      aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxModOne_c;
+      aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxNoModOne_c;
     }
     else if(contTxModBitValue == gContTxModSelectZeros_c)
     {
-      aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxModZero_c;
+      aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxNoModZero_c;
     }
-    else */if(contTxModBitValue == gContTxModSelectPN9_c)
+    else if(contTxModBitValue == gContTxModSelectPN9_c)
     {
 #ifdef gPHY_802_15_4g_d
       aspTestRequestMsg.msgData.aspTelecTest.mode = gTestContinuousTxContPN9_c;
@@ -2533,12 +2533,24 @@ void PrintTestParameters(bool_t bEraseLine)
 }
 /*****************************************************************************/
 
+void uart_task(void const *args)
+{
+   while(1)
+   {
+     if(uart.readable())
+     {
+       UartRxCallBack();
+     }
+   }
+}
+
 int main()
 {
   mainTask = new Thread(main_task);
+  uartTask = new Thread(uart_task);
   while(1)
   {
-    
+      
   }
   return 0;
 }
