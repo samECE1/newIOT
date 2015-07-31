@@ -263,7 +263,22 @@ uint8_t PhyGetLastRxLqiValue(void)
 ********************************************************************************** */
 uint8_t PhyGetLastRxRssiValue(void)
 {
-  return mPhyLastRxRSSI;
+  uint32_t tempRSSI = mPhyLastRxRSSI;
+  uint8_t comp = MCR20Drv_IndirectAccessSPIRead(LQI_OFFSET_COMP);
+  tempRSSI += comp;
+  tempRSSI >>= 1;
+  comp >>=1;
+  if(25*(tempRSSI+comp) > 4360)
+  {
+    return mPhyLastRxRSSI;
+  }
+  /*liniarization
+            4360 - 25* RSSI      (4360 - 25* RSSI)*7085 >> 18;
+  abs(rssi)=---------------  <=>
+                   37
+  */
+  tempRSSI = ((4360 - 25*(tempRSSI + comp))*7085)>>18;
+  return (uint8_t)(0x000000FF & tempRSSI);
 }
 
 /*! *********************************************************************************

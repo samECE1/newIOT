@@ -109,7 +109,7 @@
 #define gMaxAdditionalRFOffset_c       ( 1000 )
 #endif
              
-#define gDefaultChannelNumber_c         gChannel15_c                                    
+#define gDefaultChannelNumber_c         gChannel11_c                                    
 #define gMaxCCAThreshold_c              0x6EU
 #define gMinCCAThreshold_c              0x00U
 #define gDefaultCCAThreshold_c          0x50U

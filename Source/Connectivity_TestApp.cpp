@@ -359,7 +359,7 @@ static void HandleEvents(int32_t evSignals)
   if(evSignals & gMlme_CcaCnf_EVENT_c)
   {
     gCCaGotResult = TRUE;
-    uart.printf("Channel %d is", (uint32_t)testChannel);
+    uart.printf("Channel %d is ", (uint32_t)testChannel);
     if(gIsChannelIdle)
       uart.printf("Idle\r\n");
     else
@@ -826,9 +826,9 @@ bool_t SerialContinuousTxRxTest(void)
     {
       if (gAppRxPacket->rxStatus == rxSuccessStatus_c)
       {
-        uart.printf("New Packet: ");
+        uart.printf("New Packet: 0x");
         for(u8Index = 0; u8Index < (gAppRxPacket->u8DataLength); u8Index++){
-          uart.printf( "0x%02X",(gAppRxPacket->smacPdu.smacPdu[u8Index]));
+          uart.printf( "%02X",(gAppRxPacket->smacPdu.smacPdu[u8Index]));
         }
         uart.printf(" \r\n");
       }
@@ -1724,7 +1724,7 @@ void ReadRFRegs(registerAddressSize_t rasRegStartAddress, registerAddressSize_t 
   for(rasRegAddress = rasRegStartAddress; rasRegAddress <= rasRegStopAddress; rasRegAddress+=(gRegisterSize_c))
   { 
     uart.printf( "\r\n|    Address : 0x"); 
-    uart.printf("%x", (uint8_t*)&rasRegAddress); 
+    uart.printf("%x", (uint8_t*)rasRegAddress); 
     aspTestRequestMsg.msgType = aspMsgTypeXcvrReadReq_c;
     aspTestRequestMsg.msgData.aspXcvrData.addr = (uint16_t)rasRegAddress;
     aspTestRequestMsg.msgData.aspXcvrData.len  = gRegisterSize_c;
@@ -1733,7 +1733,7 @@ void ReadRFRegs(registerAddressSize_t rasRegStartAddress, registerAddressSize_t 
     APP_ASP_SapHandler(&aspTestRequestMsg, 0);
     rsRegValue = *((registerSize_t*)aspTestRequestMsg.msgData.aspXcvrData.data);              
     uart.printf( " Data value : 0x");                
-    uart.printf("%x", (uint8_t*)&rsRegValue);  
+    uart.printf("%x", (uint8_t*)rsRegValue);  
     uart.printf( "   |");
   }    
   uart.printf( "\r\n ---------------------------------------  \r\n"); 
@@ -1808,7 +1808,7 @@ bool_t ReadRegisters(void)
         rsRegValue = *((registerSize_t*)aspTestRequestMsg.msgData.aspXcvrData.data);
         
         uart.printf( "\r\n -Register value : 0x");
-        uart.printf("%x", (uint8_t*)&rsRegValue);
+        uart.printf("%x", (uint8_t*)rsRegValue);
         uart.printf( "\r\n");
         
         rRState = gRRStateStart_c; 
