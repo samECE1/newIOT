@@ -63,6 +63,13 @@ char * const cu8FreescaleLogo[]={
   NULL
 };
 
+char * const cu8IupuiLogo[]={   " \r IUPUI DEPARTMENT OF  \n"
+ "\r ELECTRICAL  AND COMPUTER ENGINEERING  \n "
+      " \r LAB ON THREAD COMMNICATION \n" 
+      "\r\n -Press enter to start",
+  NULL
+    };
+
 /*@CMA, Conn Test. New string*/
 char * const cu8MainMenu[]={  
   "\f\r  Connectivity Test Interface short cuts\n",

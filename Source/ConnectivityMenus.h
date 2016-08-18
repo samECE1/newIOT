@@ -38,6 +38,7 @@
 *************************************************************************************
 ************************************************************************************/
 extern char * const cu8FreescaleLogo[];
+extern char * const cu8IupuiLogo[];
 extern char * const cu8MainMenu[]; 
 extern char * const cu8ShortCutsBar[];
 extern char * const cu8ContinuousTestMenu[]; 

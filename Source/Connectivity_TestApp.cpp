@@ -390,7 +390,7 @@ void main_task(void const *argument)
       
     /*Prints the Welcome screens in the terminal*/  
     PrintMenu(cu8FreescaleLogo, mAppSer);
-  
+    PrintMenu(cu8IupuiLogo,mAppSer);
     connState = gConnIdleState_c; 
     bIsInitialized = TRUE;
   }
